@@ -11,12 +11,20 @@ def analiz(ticker):
     try:
         url = f"https://query2.finance.yahoo.com/v10/finance/quoteSummary/{ticker}"
         params = {"modules": "financialData,defaultKeyStatistics,summaryProfile,price"}
-        headers = {"User-Agent": "Mozilla/5.0"}
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "application/json"
+        }
         res = requests.get(url, params=params, headers=headers, timeout=15)
         data = res.json()
-        if data.get("quoteSummary", {}).get("error"):
-            return jsonify({"error": "Hisse bulunamadı"}), 404
-        return jsonify(data["quoteSummary"]["result"][0])
+        qs = data.get("quoteSummary") or {}
+        error = qs.get("error")
+        if error:
+            return jsonify({"error": str(error)}), 404
+        result = qs.get("result")
+        if not result:
+            return jsonify({"error": "Veri bulunamadı"}), 404
+        return jsonify(result[0])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
